@@ -3,50 +3,39 @@ module Main exposing (main)
 import Browser
 import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
-
-
-
--- MAIN
+import Time
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
-
-
-
--- MODEL
+    Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
 type alias Model =
     Int
 
 
-init : Model
-init =
-    0
-
-
-
--- UPDATE
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( 0, Cmd.none )
 
 
 type Msg
     = Increment
     | Decrement
+    | Tick Time.Posix
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Increment ->
-            model + 1
+            ( model + 1, Cmd.none )
 
         Decrement ->
-            model - 1
+            ( model - 1, Cmd.none )
 
-
-
--- VIEW
+        Tick _ ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -56,3 +45,8 @@ view model =
         , div [] [ text (String.fromInt model) ]
         , button [ onClick Increment ] [ text "+" ]
         ]
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Time.every 1000 Tick
