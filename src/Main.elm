@@ -1,9 +1,15 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, text)
+import Html exposing (Html, button, div, text, h1)
 import Html.Events exposing (onClick)
 import Time
+import Task
+
+
+gameTz =
+    -- ff14's timers are defined in utc
+    Time.utc
 
 
 main =
@@ -11,40 +17,44 @@ main =
 
 
 type alias Model =
-    Int
+    { instant : Time.Posix
+    , myTz : Time.Zone
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( 0, Cmd.none )
+    ( { instant = Time.millisToPosix 0, myTz = Time.utc }, Task.perform SetTz Time.here )
 
 
 type Msg
-    = Increment
-    | Decrement
+    = SetTz Time.Zone
     | Tick Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Increment ->
-            ( model + 1, Cmd.none )
+        SetTz tz ->
+            ( { model | myTz = tz }, Cmd.none )
 
-        Decrement ->
-            ( model - 1, Cmd.none )
-
-        Tick _ ->
-            ( model, Cmd.none )
+        Tick instant ->
+            ( { model | instant = instant }, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ button [ onClick Decrement ] [ text "-" ]
-        , div [] [ text (String.fromInt model) ]
-        , button [ onClick Increment ] [ text "+" ]
-        ]
+    let
+        hour =
+            String.fromInt (Time.toHour model.myTz model.instant)
+
+        minute =
+            String.fromInt (Time.toMinute model.myTz model.instant)
+
+        second =
+            String.fromInt (Time.toSecond model.myTz model.instant)
+    in
+    h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
 
 
 subscriptions : Model -> Sub Msg
