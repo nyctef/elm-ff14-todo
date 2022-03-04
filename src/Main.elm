@@ -1,15 +1,57 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, text, h1)
+import Html exposing (Html, button, div, h1, text)
 import Html.Events exposing (onClick)
-import Time
 import Task
+import Time
+import Time.Extra as Time exposing (Interval(..))
 
 
 gameTz =
     -- ff14's timers are defined in utc
     Time.utc
+
+
+type alias Reset =
+    { interval : Interval, offsetHours : Int }
+
+
+weeklyReset =
+    { interval = Week, offsetHours = 24 + 8 }
+
+
+dailyReset1 =
+    { interval = Day, offsetHours = 15 }
+
+
+dailyReset2 =
+    { interval = Day, offsetHours = 20 }
+
+
+nextReset : Reset -> Time.Posix -> Time.Posix
+nextReset reset currentTime =
+    let
+        currentInterval =
+            Time.floor reset.interval gameTz currentTime
+
+        nextInterval =
+            Time.add reset.interval 1 gameTz currentInterval
+
+        resetInCurrentInterval =
+            Time.add Hour reset.offsetHours gameTz currentInterval
+
+        resetInNextInterval =
+            Time.add Hour reset.offsetHours gameTz nextInterval
+
+        result =
+            if (Time.posixToMillis resetInCurrentInterval) > (Time.posixToMillis currentTime) then
+                resetInCurrentInterval
+
+            else
+                resetInNextInterval
+    in
+    result
 
 
 main =
@@ -53,8 +95,13 @@ view model =
 
         second =
             String.fromInt (Time.toSecond model.myTz model.instant)
+        
+        nextReset1Hours = (Time.diff Hour gameTz model.instant (nextReset dailyReset1 model.instant) )
     in
+    div [] [
     h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
+    , text ("Duties reset in " ++ (String.fromInt nextReset1Hours) ++ " hours")
+    ]
 
 
 subscriptions : Model -> Sub Msg
