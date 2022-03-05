@@ -32,17 +32,17 @@ dailyReset2 =
 nextReset : Reset -> Time.Posix -> Time.Posix
 nextReset reset currentTime =
     let
-        currentInterval =
+        startOfCurrentInterval =
             Time.floor reset.interval gameTz currentTime
 
-        nextInterval =
-            Time.add reset.interval 1 gameTz currentInterval
+        startOfNextInterval =
+            Time.add reset.interval 1 gameTz startOfCurrentInterval
 
         resetInCurrentInterval =
-            Time.add Hour reset.offsetHours gameTz currentInterval
+            Time.add Hour reset.offsetHours gameTz startOfCurrentInterval
 
         resetInNextInterval =
-            Time.add Hour reset.offsetHours gameTz nextInterval
+            Time.add Hour reset.offsetHours gameTz startOfNextInterval
 
         result =
             if (Time.posixToMillis resetInCurrentInterval) > (Time.posixToMillis currentTime) then
