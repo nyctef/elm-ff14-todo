@@ -29,6 +29,13 @@ dailyReset2 =
     { interval = Day, offsetHours = 20 }
 
 
+isLaterThan : Time.Posix -> Time.Posix -> Bool
+isLaterThan b a =
+    -- note the parameters are backwards from what you might expect!
+    -- this is to make partial application work
+    Time.posixToMillis a > Time.posixToMillis b
+
+
 nextReset : Reset -> Time.Posix -> Time.Posix
 nextReset reset currentTime =
     let
@@ -45,7 +52,7 @@ nextReset reset currentTime =
             Time.add Hour reset.offsetHours gameTz startOfNextInterval
 
         result =
-            if (Time.posixToMillis resetInCurrentInterval) > (Time.posixToMillis currentTime) then
+            if resetInCurrentInterval |> isLaterThan currentTime then
                 resetInCurrentInterval
 
             else
@@ -95,13 +102,14 @@ view model =
 
         second =
             String.fromInt (Time.toSecond model.myTz model.instant)
-        
-        nextReset1Hours = (Time.diff Hour gameTz model.instant (nextReset dailyReset1 model.instant) )
+
+        nextReset1Hours =
+            Time.diff Hour gameTz model.instant (nextReset dailyReset1 model.instant)
     in
-    div [] [
-    h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
-    , text ("Duties reset in " ++ (String.fromInt nextReset1Hours) ++ " hours")
-    ]
+    div []
+        [ h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
+        , text ("Duties reset in " ++ String.fromInt nextReset1Hours ++ " hours")
+        ]
 
 
 subscriptions : Model -> Sub Msg
