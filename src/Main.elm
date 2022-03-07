@@ -1,8 +1,8 @@
 module Main exposing (main)
 
-import Array exposing (Array)
 import Browser
-import Html exposing (Html, button, div, h1, text)
+import Html exposing (Html, button, div, h1, input, label, li, span, text, ul)
+import Html.Attributes exposing (type_)
 import Html.Events exposing (onClick)
 import Task
 import Time
@@ -73,7 +73,7 @@ type alias Todo =
 type alias Model =
     { instant : Time.Posix
     , myTz : Time.Zone
-    , todos : Array Todo
+    , todos : List Todo
     }
 
 
@@ -82,11 +82,10 @@ init _ =
     ( { instant = Time.millisToPosix 0
       , myTz = Time.utc
       , todos =
-            Array.fromList
-                [ { name = "Custom deliveries", reset = weeklyReset, done = False }
-                , { name = "Duty roulettes", reset = dailyReset1, done = False }
-                , { name = "GC turn-ins", reset = dailyReset2, done = False }
-                ]
+            [ { name = "Custom deliveries", reset = weeklyReset, done = False }
+            , { name = "Duty roulettes", reset = dailyReset1, done = False }
+            , { name = "GC turn-ins", reset = dailyReset2, done = False }
+            ]
       }
     , Task.perform SetTz Time.here
     )
@@ -137,11 +136,21 @@ viewDiffTimeText tz time1 time2 =
     hourDiff ++ ":" ++ minDiff ++ ":" ++ secondDiff
 
 
+viewTodo : Time.Posix -> Todo -> Html Msg
+viewTodo now todo =
+    span []
+        [ input [ type_ "checkbox" ] []
+        , label [] [ text todo.name ]
+        , text "\u{00A0}" -- nbsp
+        , text ("Resets in " ++ viewDiffTimeText gameTz now (nextReset todo.reset now))
+        ]
+
+
 view : Model -> Html Msg
 view model =
     div []
         [ h1 [] [ text (viewPosixTimeText model.myTz model.instant) ]
-        , text ("Duties reset in " ++ viewDiffTimeText gameTz model.instant (nextReset dailyReset1 model.instant))
+        , ul [] (model.todos |> List.map (viewTodo model.instant) |> List.map (\x -> li [] [ x ]))
         ]
 
 
