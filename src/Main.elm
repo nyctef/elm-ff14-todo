@@ -123,6 +123,16 @@ viewPosixTimeText tz time =
 
 viewDiffTimeText : Time.Zone -> Time.Posix -> Time.Posix -> String
 viewDiffTimeText tz time1 time2 =
+    -- note: currently the passed-in tz parameter doesn't matter here,
+    -- since it's only used by Time.diff for figuring out what day it should be.
+    --
+    -- however, we really should include number of days different in this string:
+    -- and since a day doesn't always last 24 hours, in theory we need tz data to
+    -- correctly determine whether two instants are a day apart or not.
+    --
+    -- however, the tz data provided by Time.here only gives us a fixed utc offset:
+    -- https://package.elm-lang.org/packages/elm/time/latest/Time#here
+    -- so we'd still have the bug in practice until elm is able to give better tz data.
     let
         hourDiff =
             Time.diff Hour tz time1 time2 |> String.fromInt
