@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Array exposing (Array)
 import Browser
 import Html exposing (Html, button, div, h1, text)
 import Html.Events exposing (onClick)
@@ -65,15 +66,31 @@ main =
     Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
+type alias Todo =
+    { name : String, reset : Reset, done : Bool }
+
+
 type alias Model =
     { instant : Time.Posix
     , myTz : Time.Zone
+    , todos : Array Todo
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { instant = Time.millisToPosix 0, myTz = Time.utc }, Task.perform SetTz Time.here )
+    ( { instant = Time.millisToPosix 0
+      , myTz = Time.utc
+      , todos =
+            Array.fromList
+                [
+                    { name = "Custom deliveries", reset = weeklyReset, done = False },
+                    { name = "Duty roulettes", reset = dailyReset1, done = False },
+                    { name = "GC turn-ins", reset = dailyReset2, done = False }
+                ]
+      }
+    , Task.perform SetTz Time.here
+    )
 
 
 type Msg
