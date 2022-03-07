@@ -83,10 +83,9 @@ init _ =
       , myTz = Time.utc
       , todos =
             Array.fromList
-                [
-                    { name = "Custom deliveries", reset = weeklyReset, done = False },
-                    { name = "Duty roulettes", reset = dailyReset1, done = False },
-                    { name = "GC turn-ins", reset = dailyReset2, done = False }
+                [ { name = "Custom deliveries", reset = weeklyReset, done = False }
+                , { name = "Duty roulettes", reset = dailyReset1, done = False }
+                , { name = "GC turn-ins", reset = dailyReset2, done = False }
                 ]
       }
     , Task.perform SetTz Time.here
@@ -107,6 +106,7 @@ update msg model =
         Tick instant ->
             ( { model | instant = instant }, Cmd.none )
 
+
 viewPosixTimeText : Time.Zone -> Time.Posix -> String
 viewPosixTimeText tz time =
     let
@@ -118,19 +118,30 @@ viewPosixTimeText tz time =
 
         second =
             String.fromInt (Time.toSecond tz time)
-
     in
     hour ++ ":" ++ minute ++ ":" ++ second
 
+
+viewDiffTimeText : Time.Zone -> Time.Posix -> Time.Posix -> String
+viewDiffTimeText tz time1 time2 =
+    let
+        hourDiff =
+            Time.diff Hour tz time1 time2 |> String.fromInt
+
+        minDiff =
+            Time.diff Minute tz time1 time2 |> modBy 60 |> String.fromInt
+
+        secondDiff =
+            Time.diff Second tz time1 time2 |> modBy 60 |> String.fromInt
+    in
+    hourDiff ++ ":" ++ minDiff ++ ":" ++ secondDiff
+
+
 view : Model -> Html Msg
 view model =
-    let 
-        nextReset1Hours =
-            Time.diff Hour gameTz model.instant (nextReset dailyReset1 model.instant)
-    in
     div []
         [ h1 [] [ text (viewPosixTimeText model.myTz model.instant) ]
-        , text ("Duties reset in " ++ String.fromInt nextReset1Hours ++ " hours")
+        , text ("Duties reset in " ++ viewDiffTimeText gameTz model.instant (nextReset dailyReset1 model.instant))
         ]
 
 
