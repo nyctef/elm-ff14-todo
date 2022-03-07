@@ -107,24 +107,29 @@ update msg model =
         Tick instant ->
             ( { model | instant = instant }, Cmd.none )
 
+viewPosixTimeText : Time.Zone -> Time.Posix -> String
+viewPosixTimeText tz time =
+    let
+        hour =
+            String.fromInt (Time.toHour tz time)
+
+        minute =
+            String.fromInt (Time.toMinute tz time)
+
+        second =
+            String.fromInt (Time.toSecond tz time)
+
+    in
+    hour ++ ":" ++ minute ++ ":" ++ second
 
 view : Model -> Html Msg
 view model =
-    let
-        hour =
-            String.fromInt (Time.toHour model.myTz model.instant)
-
-        minute =
-            String.fromInt (Time.toMinute model.myTz model.instant)
-
-        second =
-            String.fromInt (Time.toSecond model.myTz model.instant)
-
+    let 
         nextReset1Hours =
             Time.diff Hour gameTz model.instant (nextReset dailyReset1 model.instant)
     in
     div []
-        [ h1 [] [ text (hour ++ ":" ++ minute ++ ":" ++ second) ]
+        [ h1 [] [ text (viewPosixTimeText model.myTz model.instant) ]
         , text ("Duties reset in " ++ String.fromInt nextReset1Hours ++ " hours")
         ]
 
