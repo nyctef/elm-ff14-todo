@@ -8,7 +8,18 @@ import Time.Extra exposing (Parts, partsToPosix)
 import TimeFormatting exposing (..)
 
 
-suite : Test
 suite =
-    test "times are formatted with leading zeros" <|
-        \_ -> Expect.equal "01:02:03" (formatPosixTime utc <| partsToPosix utc <| Parts 2020 Jan 20 1 2 3 99)
+    describe "time formatting"
+        [ test "times are formatted with leading zeros" <|
+            \_ -> Expect.equal "01:02:03" (formatPosixTime utc <| partsToPosix utc <| Parts 2020 Jan 20 1 2 3 99)
+        , test "time diffs are formatted with leading zeros" <|
+            \_ ->
+                let
+                    time1 =
+                        partsToPosix utc <| Parts 2020 Jan 20 1 2 3 99
+
+                    time2 =
+                        partsToPosix utc <| Parts 2020 Jan 20 4 4 4 99
+                in
+                Expect.equal "03:02:01" (formatTimeDiff utc time1 time2)
+        ]
