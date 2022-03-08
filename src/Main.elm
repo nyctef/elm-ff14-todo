@@ -7,7 +7,7 @@ import Html.Events exposing (onCheck)
 import Task
 import Time
 import Time.Extra as Time exposing (Interval(..))
-import TimeFormatting exposing (formatTimeDiff)
+import TimeFormattingTest exposing (formatTimeDiff)
 import TimeFormatting exposing (formatPosixTime)
 import TimeFormatting exposing (..)
 
