@@ -38,6 +38,26 @@ isLaterThan b a =
     Time.posixToMillis a > Time.posixToMillis b
 
 
+isLaterThanMaybe  : Maybe Time.Posix -> Time.Posix -> Bool
+isLaterThanMaybe b a=
+    Maybe.map (\b_ -> isLaterThan b_ a) b |> Maybe.withDefault False
+
+{-| Imagine a timeline like the following:
+
+```
+--|----R----|----R----|
+--  ^a   ^b
+```
+
+where `|` indicates the interval (day/week) boundaries
+and R indicates the time of the reset within that interval.
+
+The current time is either a or b: in our current interval, we're
+either before or after the reset in that interval.
+In case a, we just use the reset in the current interval:
+otherwise we jump ahead one interval and use that reset as 
+next one instead.
+-}
 nextReset : Reset -> Time.Posix -> Time.Posix
 nextReset reset currentTime =
     let
@@ -62,6 +82,39 @@ nextReset reset currentTime =
     in
     result
 
+
+{-| same as `nextReset`, but with this timeline instead:
+
+```
+--|----R----|----R----|
+--            ^a   ^b
+```
+
+and searching backwards instead of forwards.
+-}
+prevReset : Reset -> Time.Posix -> Time.Posix
+prevReset reset currentTime =
+    let
+        startOfCurrentInterval =
+            Time.floor reset.interval gameTz currentTime
+
+        startOfPrevInterval =
+            Time.add reset.interval -1 gameTz startOfCurrentInterval
+
+        resetInCurrentInterval =
+            Time.add Hour reset.offsetHours gameTz startOfCurrentInterval
+
+        resetInPrevInterval =
+            Time.add Hour reset.offsetHours gameTz startOfPrevInterval
+
+        result =
+            if currentTime |> isLaterThan resetInCurrentInterval then
+                resetInCurrentInterval
+
+            else
+                resetInPrevInterval
+    in
+    result
 
 main =
     Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
@@ -113,6 +166,16 @@ setTodoState todoId newState =
                 item
         )
 
+resetTodos : Time.Posix -> List Todo -> List Todo
+resetTodos now =
+    List.map
+        (\item ->
+            let
+                reset = prevReset item.reset now
+                newState = if reset |> isLaterThanMaybe item.lastDone then Nothing else item.lastDone
+            in
+                ({ item | lastDone = newState })
+            )
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -121,7 +184,7 @@ update msg model =
             ( { model | myTz = tz }, Cmd.none )
 
         Tick instant ->
-            ( { model | instant = instant }, Cmd.none )
+            ( { model | instant = instant, todos = resetTodos instant model.todos }, Cmd.none )
 
         SetTodoDone id ->
             ( { model | todos = setTodoState id (Just model.instant) model.todos }, Cmd.none )
