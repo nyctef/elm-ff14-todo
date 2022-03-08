@@ -2,8 +2,8 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (Html, button, div, h1, input, label, li, span, text, ul)
-import Html.Attributes exposing (type_)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (checked, type_)
+import Html.Events exposing (onCheck, onClick)
 import Task
 import Time
 import Time.Extra as Time exposing (Interval(..))
@@ -66,8 +66,12 @@ main =
     Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
+type TodoId
+    = TodoId Int
+
+
 type alias Todo =
-    { name : String, reset : Reset, done : Bool }
+    { id : TodoId, name : String, reset : Reset, done : Bool }
 
 
 type alias Model =
@@ -82,9 +86,9 @@ init _ =
     ( { instant = Time.millisToPosix 0
       , myTz = Time.utc
       , todos =
-            [ { name = "Custom deliveries", reset = weeklyReset, done = False }
-            , { name = "Duty roulettes", reset = dailyReset1, done = False }
-            , { name = "GC turn-ins", reset = dailyReset2, done = False }
+            [ { id = TodoId 1, name = "Custom deliveries", reset = weeklyReset, done = False }
+            , { id = TodoId 2, name = "Duty roulettes", reset = dailyReset1, done = False }
+            , { id = TodoId 3, name = "GC turn-ins", reset = dailyReset2, done = False }
             ]
       }
     , Task.perform SetTz Time.here
@@ -94,6 +98,19 @@ init _ =
 type Msg
     = SetTz Time.Zone
     | Tick Time.Posix
+    | SetTodoDone TodoId
+    | SetTodoUndone TodoId
+
+
+setTodoState todoId done =
+    List.map
+        (\item ->
+            if item.id == todoId then
+                { item | done = done }
+
+            else
+                item
+        )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -104,6 +121,12 @@ update msg model =
 
         Tick instant ->
             ( { model | instant = instant }, Cmd.none )
+
+        SetTodoDone id ->
+            ( { model | todos = setTodoState id True model.todos }, Cmd.none )
+
+        SetTodoUndone id ->
+            ( { model | todos = setTodoState id False model.todos }, Cmd.none )
 
 
 viewPosixTimeText : Time.Zone -> Time.Posix -> String
@@ -149,7 +172,19 @@ viewDiffTimeText tz time1 time2 =
 viewTodo : Time.Posix -> Todo -> Html Msg
 viewTodo now todo =
     span []
-        [ input [ type_ "checkbox" ] []
+        [ input
+            [ type_ "checkbox"
+            , checked todo.done
+            , onCheck
+                (\checked ->
+                    if checked then
+                        SetTodoDone todo.id
+
+                    else
+                        SetTodoUndone todo.id
+                )
+            ]
+            []
         , label [] [ text todo.name ]
         , text "\u{00A0}" -- nbsp
         , text ("Resets in " ++ viewDiffTimeText gameTz now (nextReset todo.reset now))
