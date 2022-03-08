@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, button, div, h1, input, label, li, span, text, ul)
 import Html.Attributes exposing (checked, type_)
 import Html.Events exposing (onCheck, onClick)
+import String exposing (padLeft)
 import Task
 import Time
 import Time.Extra as Time exposing (Interval(..))
@@ -129,19 +130,27 @@ update msg model =
             ( { model | todos = setTodoState id False model.todos }, Cmd.none )
 
 
+formatTimePart =
+    String.fromInt >> padLeft 2 '0'
+
+
 viewPosixTimeText : Time.Zone -> Time.Posix -> String
 viewPosixTimeText tz time =
     let
         hour =
-            String.fromInt (Time.toHour tz time)
+            Time.toHour tz time
 
         minute =
-            String.fromInt (Time.toMinute tz time)
+            Time.toMinute tz time
 
         second =
-            String.fromInt (Time.toSecond tz time)
+            Time.toSecond tz time
     in
-    hour ++ ":" ++ minute ++ ":" ++ second
+    (hour |> formatTimePart) ++ ":" ++ (minute |> formatTimePart) ++ ":" ++ (second |> formatTimePart)
+
+
+formatTimeDiff hourDiff minDiff secondDiff =
+    (hourDiff |> formatTimePart) ++ ":" ++ (minDiff |> modBy 60 |> formatTimePart) ++ ":" ++ (secondDiff |> modBy 60 |> formatTimePart)
 
 
 viewDiffTimeText : Time.Zone -> Time.Posix -> Time.Posix -> String
@@ -158,15 +167,15 @@ viewDiffTimeText tz time1 time2 =
     -- so we'd still have the bug in practice until elm is able to give better tz data.
     let
         hourDiff =
-            Time.diff Hour tz time1 time2 |> String.fromInt
+            Time.diff Hour tz time1 time2
 
         minDiff =
-            Time.diff Minute tz time1 time2 |> modBy 60 |> String.fromInt
+            Time.diff Minute tz time1 time2
 
         secondDiff =
-            Time.diff Second tz time1 time2 |> modBy 60 |> String.fromInt
+            Time.diff Second tz time1 time2
     in
-    hourDiff ++ ":" ++ minDiff ++ ":" ++ secondDiff
+    formatTimeDiff hourDiff minDiff secondDiff
 
 
 viewTodo : Time.Posix -> Todo -> Html Msg
