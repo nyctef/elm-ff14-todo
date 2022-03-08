@@ -1,9 +1,9 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, h1, input, label, li, span, text, ul)
+import Html exposing (Html, div, h1, input, label, li, span, text, ul)
 import Html.Attributes exposing (checked, type_)
-import Html.Events exposing (onCheck, onClick)
+import Html.Events exposing (onCheck)
 import String exposing (padLeft)
 import Task
 import Time
@@ -209,5 +209,5 @@ view model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Time.every 1000 Tick
