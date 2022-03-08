@@ -181,20 +181,22 @@ viewDiffTimeText tz time1 time2 =
 viewTodo : Time.Posix -> Todo -> Html Msg
 viewTodo now todo =
     span []
-        [ input
-            [ type_ "checkbox"
-            , checked todo.done
-            , onCheck
-                (\checked ->
-                    if checked then
-                        SetTodoDone todo.id
+        [ label []
+            [ input
+                [ type_ "checkbox"
+                , checked todo.done
+                , onCheck
+                    (\checked ->
+                        if checked then
+                            SetTodoDone todo.id
 
-                    else
-                        SetTodoUndone todo.id
-                )
+                        else
+                            SetTodoUndone todo.id
+                    )
+                ]
+                []
+            , text todo.name
             ]
-            []
-        , label [] [ text todo.name ]
         , text "\u{00A0}" -- nbsp
         , text ("Resets in " ++ viewDiffTimeText gameTz now (nextReset todo.reset now))
         ]
