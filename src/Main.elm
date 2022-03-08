@@ -7,8 +7,6 @@ import Html.Events exposing (onCheck)
 import Task
 import Time
 import Time.Extra as Time exposing (Interval(..))
-import TimeFormattingTest exposing (formatTimeDiff)
-import TimeFormatting exposing (formatPosixTime)
 import TimeFormatting exposing (..)
 
 
@@ -74,7 +72,7 @@ type TodoId
 
 
 type alias Todo =
-    { id : TodoId, name : String, reset : Reset, done : Bool }
+    { id : TodoId, name : String, reset : Reset, lastDone : Maybe Time.Posix }
 
 
 type alias Model =
@@ -89,9 +87,9 @@ init _ =
     ( { instant = Time.millisToPosix 0
       , myTz = Time.utc
       , todos =
-            [ { id = TodoId 1, name = "Custom deliveries", reset = weeklyReset, done = False }
-            , { id = TodoId 2, name = "Duty roulettes", reset = dailyReset1, done = False }
-            , { id = TodoId 3, name = "GC turn-ins", reset = dailyReset2, done = False }
+            [ { id = TodoId 1, name = "Custom deliveries", reset = weeklyReset, lastDone = Nothing }
+            , { id = TodoId 2, name = "Duty roulettes", reset = dailyReset1, lastDone = Nothing }
+            , { id = TodoId 3, name = "GC turn-ins", reset = dailyReset2, lastDone = Nothing }
             ]
       }
     , Task.perform SetTz Time.here
@@ -105,11 +103,11 @@ type Msg
     | SetTodoUndone TodoId
 
 
-setTodoState todoId done =
+setTodoState todoId newState =
     List.map
         (\item ->
             if item.id == todoId then
-                { item | done = done }
+                { item | lastDone = newState }
 
             else
                 item
@@ -126,12 +124,12 @@ update msg model =
             ( { model | instant = instant }, Cmd.none )
 
         SetTodoDone id ->
-            ( { model | todos = setTodoState id True model.todos }, Cmd.none )
+            ( { model | todos = setTodoState id (Just model.instant) model.todos }, Cmd.none )
 
         SetTodoUndone id ->
-            ( { model | todos = setTodoState id False model.todos }, Cmd.none )
+            ( { model | todos = setTodoState id Nothing model.todos }, Cmd.none )
 
-
+isPresent = Maybe.map (\_ -> True) >> Maybe.withDefault False
 
 viewTodo : Time.Posix -> Todo -> Html Msg
 viewTodo now todo =
@@ -139,7 +137,7 @@ viewTodo now todo =
         [ label []
             [ input
                 [ type_ "checkbox"
-                , checked todo.done
+                , checked (isPresent todo.lastDone)
                 , onCheck
                     (\checked ->
                         if checked then
