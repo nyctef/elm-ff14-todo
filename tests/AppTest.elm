@@ -27,6 +27,16 @@ todoWithId id =
     List.filter (\x -> x.id == TodoId id) >> List.head
 
 
+fail : String -> Expectation
+fail message =
+    Expect.true message False
+
+
+expectJust : (a -> Expectation) -> Maybe a -> Expectation
+expectJust y x =
+    x |> Maybe.map y |> Maybe.withDefault (fail "Expected Just, but got Nothing")
+
+
 suite =
     describe "update function"
         [ test "setting the initial model" <|
@@ -49,6 +59,10 @@ suite =
                 updates [ SetTz utc, Tick now, SetTodoDone (TodoId 1) ]
                     |> .todos
                     |> todoWithId 1
-                    |> Maybe.map (Expect.all [ .id >> Expect.equal (TodoId 1), .lastDone >> Expect.equal (Just now) ])
-                    |> Maybe.withDefault (Expect.true "todo not found" False)
+                    |> expectJust
+                        (Expect.all
+                            [ .id >> Expect.equal (TodoId 1)
+                            , .lastDone >> Expect.equal (Just now)
+                            ]
+                        )
         ]
