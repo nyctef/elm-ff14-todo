@@ -1,4 +1,4 @@
-module App exposing (init, update, view, subscriptions, Msg(..))
+module App exposing (init, update, view, subscriptions, Msg(..), Model)
 
 import Html exposing (Html, div, h1, input, label, li, span, text, ul)
 import Html.Attributes exposing (checked, type_)
