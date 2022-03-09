@@ -65,4 +65,21 @@ suite =
                             , .lastDone >> Expect.equal (Just now)
                             ]
                         )
+        , test "resetting a todo" <|
+            let
+                todayAt2pm =
+                    partsToPosix utc <| Parts 2020 Jan 20 14 0 0 0
+
+                todayAfter3pm =
+                    partsToPosix utc <| Parts 2020 Jan 20 15 1 0 0
+            in
+            \_ ->
+                updates [ SetTz utc, Tick todayAt2pm, SetTodoDone (TodoId 2), Tick todayAfter3pm ]
+                    |> .todos
+                    |> todoWithId 2
+                    |> expectJust
+                        (Expect.all
+                            [ .lastDone >> Expect.equal Nothing
+                            ]
+                        )
         ]
