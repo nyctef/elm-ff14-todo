@@ -1,5 +1,5 @@
 quickstart:
 
 ```
-npx parcel src/index.html
+npx parcel serve --port 1414 src/index.html
 ```

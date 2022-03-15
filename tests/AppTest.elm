@@ -5,7 +5,21 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
 import Time exposing (Month(..), utc)
-import Time.Extra exposing (Parts, partsToPosix)
+import Time.Extra exposing (Interval(..), Parts, partsToPosix)
+
+
+weeklyReset =
+    { interval = Week, offsetHours = 24 + 8 }
+
+
+dailyReset =
+    { interval = Day, offsetHours = 15 }
+
+
+testTodos =
+    [ { id = TodoId "test-weekly-todo", name = "test weekly todo", reset = weeklyReset, lastDone = Nothing }
+    , { id = TodoId "test-daily-todo", name = "test daily todo", reset = dailyReset, lastDone = Nothing }
+    ]
 
 
 dumbInit =
@@ -20,7 +34,7 @@ dumbUpdate x =
 
 updates : List Msg -> Model
 updates =
-    List.foldl dumbUpdate (dumbInit ())
+    List.foldl dumbUpdate (dumbInit testTodos)
 
 
 todoWithId id =
@@ -56,12 +70,12 @@ suite =
                     partsToPosix utc <| Parts 2020 Jan 20 1 2 3 99
             in
             \_ ->
-                updates [ SetTz utc, Tick now, SetTodoDone (TodoId 1) ]
+                updates [ SetTz utc, Tick now, SetTodoDone (TodoId "test-weekly-todo") ]
                     |> .todos
-                    |> todoWithId 1
+                    |> todoWithId "test-weekly-todo"
                     |> expectJust
                         (Expect.all
-                            [ .id >> Expect.equal (TodoId 1)
+                            [ .id >> Expect.equal (TodoId "test-weekly-todo")
                             , .lastDone >> Expect.equal (Just now)
                             ]
                         )
@@ -74,9 +88,9 @@ suite =
                     partsToPosix utc <| Parts 2020 Jan 20 15 1 0 0
             in
             \_ ->
-                updates [ SetTz utc, Tick todayAt2pm, SetTodoDone (TodoId 2), Tick todayAfter3pm ]
+                updates [ SetTz utc, Tick todayAt2pm, SetTodoDone (TodoId "test-daily-todo"), Tick todayAfter3pm ]
                     |> .todos
-                    |> todoWithId 2
+                    |> todoWithId "test-daily-todo"
                     |> expectJust
                         (Expect.all
                             [ .lastDone >> Expect.equal Nothing

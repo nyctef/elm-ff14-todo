@@ -1,4 +1,4 @@
-module App exposing (init, update, view, subscriptions, Msg(..), Model, TodoId(..))
+module App exposing (Model, Msg(..), Reset, Todo, TodoId(..), init, subscriptions, update, view)
 
 import Html exposing (Html, div, h1, input, label, li, span, text, ul)
 import Html.Attributes exposing (checked, type_)
@@ -18,18 +18,6 @@ type alias Reset =
     { interval : Interval, offsetHours : Int }
 
 
-weeklyReset =
-    { interval = Week, offsetHours = 24 + 8 }
-
-
-dailyReset1 =
-    { interval = Day, offsetHours = 15 }
-
-
-dailyReset2 =
-    { interval = Day, offsetHours = 20 }
-
-
 isLaterThan : Time.Posix -> Time.Posix -> Bool
 isLaterThan b a =
     -- note the parameters are backwards from what you might expect!
@@ -37,16 +25,17 @@ isLaterThan b a =
     Time.posixToMillis a > Time.posixToMillis b
 
 
-isLaterThanMaybe  : Maybe Time.Posix -> Time.Posix -> Bool
-isLaterThanMaybe b a=
+isLaterThanMaybe : Maybe Time.Posix -> Time.Posix -> Bool
+isLaterThanMaybe b a =
     Maybe.map (\b_ -> isLaterThan b_ a) b |> Maybe.withDefault False
+
 
 {-| Imagine a timeline like the following:
 
-```
---|----R----|----R----|
---  ^a   ^b
-```
+    --|----R----|----R----|
+    --  ^a   ^b
+
+
 
 where `|` indicates the interval (day/week) boundaries
 and R indicates the time of the reset within that interval.
@@ -54,8 +43,9 @@ and R indicates the time of the reset within that interval.
 The current time is either a or b: in our current interval, we're
 either before or after the reset in that interval.
 In case a, we just use the reset in the current interval:
-otherwise we jump ahead one interval and use that reset as 
+otherwise we jump ahead one interval and use that reset as
 next one instead.
+
 -}
 nextReset : Reset -> Time.Posix -> Time.Posix
 nextReset reset currentTime =
@@ -84,12 +74,13 @@ nextReset reset currentTime =
 
 {-| same as `nextReset`, but with this timeline instead:
 
-```
---|----R----|----R----|
---            ^a   ^b
-```
+    --|----R----|----R----|
+    --            ^a   ^b
+
+
 
 and searching backwards instead of forwards.
+
 -}
 prevReset : Reset -> Time.Posix -> Time.Posix
 prevReset reset currentTime =
@@ -117,7 +108,7 @@ prevReset reset currentTime =
 
 
 type TodoId
-    = TodoId Int
+    = TodoId String
 
 
 type alias Todo =
@@ -131,15 +122,11 @@ type alias Model =
     }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : List Todo -> ( Model, Cmd Msg )
+init initialTodos =
     ( { instant = Time.millisToPosix 0
       , myTz = Time.utc
-      , todos =
-            [ { id = TodoId 1, name = "Custom deliveries", reset = weeklyReset, lastDone = Nothing }
-            , { id = TodoId 2, name = "Duty roulettes", reset = dailyReset1, lastDone = Nothing }
-            , { id = TodoId 3, name = "GC turn-ins", reset = dailyReset2, lastDone = Nothing }
-            ]
+      , todos = initialTodos
       }
     , Task.perform SetTz Time.here
     )
@@ -162,16 +149,25 @@ setTodoState todoId newState =
                 item
         )
 
+
 resetTodos : Time.Posix -> List Todo -> List Todo
 resetTodos now =
     List.map
         (\item ->
             let
-                reset = prevReset item.reset now
-                newState = if reset |> isLaterThanMaybe item.lastDone then Nothing else item.lastDone
+                reset =
+                    prevReset item.reset now
+
+                newState =
+                    if reset |> isLaterThanMaybe item.lastDone then
+                        Nothing
+
+                    else
+                        item.lastDone
             in
-                ({ item | lastDone = newState })
-            )
+            { item | lastDone = newState }
+        )
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
@@ -188,7 +184,10 @@ update msg model =
         SetTodoUndone id ->
             ( { model | todos = setTodoState id Nothing model.todos }, Cmd.none )
 
-isPresent = Maybe.map (\_ -> True) >> Maybe.withDefault False
+
+isPresent =
+    Maybe.map (\_ -> True) >> Maybe.withDefault False
+
 
 viewTodo : Time.Posix -> Todo -> Html Msg
 viewTodo now todo =
