@@ -6285,6 +6285,7 @@ var $author$project$Main$todoDecoder = A5(
 var $author$project$Main$decoder = $elm$json$Json$Decode$list($author$project$Main$todoDecoder);
 var $author$project$Main$dailyReset1 = {interval: $justinmimbs$time_extra$Time$Extra$Day, offsetHours: 15};
 var $author$project$Main$dailyReset2 = {interval: $justinmimbs$time_extra$Time$Extra$Day, offsetHours: 20};
+var $author$project$Main$lotteryReset = {interval: $justinmimbs$time_extra$Time$Extra$Week, offsetHours: (5 * 24) + 20};
 var $author$project$Main$weeklyReset = {interval: $justinmimbs$time_extra$Time$Extra$Week, offsetHours: 24 + 8};
 var $author$project$Main$defaultTodos = _List_fromArray(
 	[
@@ -6295,10 +6296,94 @@ var $author$project$Main$defaultTodos = _List_fromArray(
 		reset: $author$project$Main$weeklyReset
 	},
 		{
+		id: $author$project$App$TodoId('yorha'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'YoRHa weekly quest',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('astronomy'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Astronomy tomestone cap',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('wondrous-tails-1'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Pick up Wondrous Tails',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('wondrous-tails-2'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Complete Wondrous Tails',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('gc-elite-1'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Pick up GC elite hunting mark',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('gc-elite-2'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Complete GC elite hunting mark',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('ish-elite-1'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Pick up Ishgard elite hunting mark',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('ish-elite-2'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Complete Ishgard elite hunting mark',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('sb-elite-1'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Pick up Stormblood elite hunting mark',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('sb-elite-2'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Complete Stormblood elite hunting mark',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
+		id: $author$project$App$TodoId('doman'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Doman enclave donations',
+		reset: $author$project$Main$weeklyReset
+	},
+		{
 		id: $author$project$App$TodoId('duty-roulettes'),
 		lastDone: $elm$core$Maybe$Nothing,
 		name: 'Duty roulettes',
 		reset: $author$project$Main$dailyReset1
+	},
+		{
+		id: $author$project$App$TodoId('beast tribes'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Beast tribe daily quests',
+		reset: $author$project$Main$dailyReset1
+	},
+		{
+		id: $author$project$App$TodoId('mini-cactpot'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Mini Cactpot',
+		reset: $author$project$Main$dailyReset1
+	},
+		{
+		id: $author$project$App$TodoId('jumbo-cactpot'),
+		lastDone: $elm$core$Maybe$Nothing,
+		name: 'Jumbo Cactpot',
+		reset: $author$project$Main$lotteryReset
 	},
 		{
 		id: $author$project$App$TodoId('gc-turnins'),
