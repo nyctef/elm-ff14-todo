@@ -2,4 +2,4 @@
 
 set -e
 
-(mkdir -p dist && cd dist && elm make ../src/Main.elm)
+npx parcel build src/index.html
