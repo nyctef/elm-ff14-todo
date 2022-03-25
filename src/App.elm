@@ -213,11 +213,16 @@ viewTodo now todo =
         ]
 
 
+sortTodos : Time.Posix -> List Todo -> List Todo
+sortTodos now =
+    List.sortBy (\x -> Time.posixToMillis (nextReset x.reset now))
+
+
 view : Model -> Html Msg
 view model =
     div []
         [ h1 [] [ text (formatPosixTime model.myTz model.instant) ]
-        , ul [] (model.todos |> List.map (viewTodo model.instant) |> List.map (\x -> li [] [ x ]))
+        , ul [] (model.todos |> sortTodos model.instant |> List.map (viewTodo model.instant) |> List.map (\x -> li [] [ x ]))
         ]
 
 
