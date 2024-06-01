@@ -1,3 +1,5 @@
+An experiment in using Elm to write a todo app where the todos reset at regular intervals
+
 quickstart:
 
 ```
